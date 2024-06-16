@@ -15,93 +15,69 @@ const rl = readline.createInterface(
 )
 
 program.option(
-  "-f, --file [string]",
+  "-f, --file <type>",
   "file for contacts",
-  CONTACTS_FILE
+  'contacts.json'
 )
 
 program.option(
-  "-c, --contact [number]",
+  "-c, --phone <type>",
   "phone book contact number",
-  CONTACT_NUMBER
 )
 
 program.option(
-  "-n, --name-contact [string]",
+  "-n, --name <type>",
   "phone book contact name",
-  CONTACT_NAME
 )
 
 program.option(
-  "-e, --email [string]",
+  "-e, --email <type>",
   "phone book contact e-mail",
-  CONTACT_EMAIL
 )
 
 program.option(
-  "-a, --action [string]",
+  "-a, --action <type>",
   "choose action list, get, add, del",
-  CONTACT_EMAIL
 )
 
-const { file, contact, nameContact, email } = program.parse(process.argv).opts()
+program.option(
+  "-, --id <type>",
+  "contact id",
+)
+
+
+const { file, phone, name, email, id, action } = program.parse(process.argv).opts()
 
  
 
-const start = async({ action, id, name, email, phone }) => {
-  rl.question(
-    'Co chcesz zrobić?'.blue,
-    async value => {
-      if (value == 'list') {
-       await readFile()
-       await start()  
-      }
-      else if (value === 'add user') {
-        addUser()
-      }
-      else if (value === 'end') {
-        rl.close()
-      }
-    }
-    )
+const start = async (phone, name, email, action, id) => {
+  switch (action) {
+    case "list":
+      readFile()
+      break;
+
+    case "get":
+      
+      showUser(id)
+      break;
+
+    case "add":
+      addUser(phone, name, email, id)
+      break;
+
+    case "remove":
+      delUser(id)
+      break;
     
+  }
 }
   
-const addUser = async () => {
-  await new Promise((resolve, reject)=> {
-  rl.question(
-    'Podaj imię i nazwisko:\n',
-    value => {
-      CONTACT_NAME = value
-      resolve()
-    }
-  )
-  })
-  await new Promise((resolve, reject)=> {
-    rl.question(
-      'Podaj numer telefonu:\n',
-      value => {
-        CONTACT_NUMBER = value
-        resolve()
-      }
-    )
-  })
-  await new Promise((resolve, reject)=> {
-    rl.question(
-      'Podaj adres email: \n',
-      value => {
-        CONTACT_EMAIL = value
-        resolve()
-      }
-    )
-  })
-  
-    await new Promise((resolve, reject)=> {
+const addUser = async (phone, name, email) => {
       const userData={
           "id": uuidv4(),
-          "name": CONTACT_NAME,
-          "email": CONTACT_EMAIL,
-          "phone": CONTACT_NUMBER
+          "name": name,
+          "email": email,
+          "phone": phone
       }
       
       fs.readFile(file, 'utf8', (err, data) => {
@@ -127,30 +103,79 @@ const addUser = async () => {
         console.error('Błąd zapisu do pliku:', err);
       } else {
         console.log('Nowa pozycja została dodana do pliku.');
-      }
+        }
+        rl.close()
       });
     });
-    })
 }
+    
+const delUser = async (id) => {
+      
+      fs.readFile(file, 'utf8', (err, data) => {
+        if (err) {
+          console.error('Błąd odczytu pliku:', err);
+          return;
+        }
+
+      let existingData;
+        try {
+          existingData = JSON.parse(data);
+        } catch (parseError) {
+        console.error('Błąd parsowania JSON:', parseError);
+        return;
+        }
+
+      // Dodaj nowy obiekt do tablicy istniejących danych
+        ; let filtredgData = existingData.filter(item => item.id !== id);
+
+      // Zapisz zmienioną tablicę z powrotem do pliku
+      fs.writeFile(file, JSON.stringify(filtredgData, null, 2), 'utf8', (err) => {
+      if (err) {
+        console.error('Błąd zapisu do pliku:', err);
+      } else {
+        console.log('Pozycja została usunięta pliku.');
+        }
+        rl.close()
+      });
+    });
+}
+    
+const showUser = async (id) => {
+      fs.readFile(file, 'utf8', (err, data) => {
+        if (err) {
+          console.error('Błąd odczytu pliku:', err);
+          return;
+        }
+
+      let existingData;
+        try {
+          existingData = JSON.parse(data);
+        } catch (parseError) {
+        console.error('Błąd parsowania JSON:', parseError);
+        return;
+        }
+
+        const foundItem = existingData.find(item => item.id === id);
+        if (foundItem) {
+           console.log(foundItem);
+        }
+        else('brak danych')
+
+        rl.close()
+      });
+    }
+
 
 const readFile = () => {
-  return new Promise((resolve, reject) => {
-    fs.readFile(file, (err, data) => {
-      if (err) {
-        console.log("error", err.message);
-        reject(err);
-      } else {
-        console.log(data.toString());
-        resolve();
-      }
-    });
+  console.log('start')
+  fs.readFile('contacts.json', (err, data) => {
+    if (err) {
+      console.log("error", err.message);
+    } else {
+      console.log(data.toString());
+    }
   });
-};  
+}  
 
 
-let CONTACTS_FILE = file
-let CONTACT_NUMBER = contact
-let CONTACT_NAME = nameContact
-let CONTACT_EMAIL = email 
-
-start()
+start(phone, name, email, action, id)
