@@ -167,7 +167,6 @@ const showUser = async (id) => {
 
 
 const readFile = () => {
-  console.log('start')
   fs.readFile('contacts.json', (err, data) => {
     if (err) {
       console.log("error", err.message);
