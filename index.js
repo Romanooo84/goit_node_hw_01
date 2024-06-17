@@ -159,8 +159,7 @@ const showUser = async (id) => {
         if (foundItem) {
            console.log(foundItem);
         }
-        else('brak danych')
-
+        else(console.log('brak danych'))
         rl.close()
       });
     }
