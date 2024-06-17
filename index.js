@@ -93,11 +93,7 @@ const addUser = async (phone, name, email) => {
         console.error('Błąd parsowania JSON:', parseError);
         return;
         }
-
-      // Dodaj nowy obiekt do tablicy istniejących danych
         existingData.push(userData);
-
-      // Zapisz zmienioną tablicę z powrotem do pliku
       fs.writeFile(file, JSON.stringify(existingData, null, 2), 'utf8', (err) => {
       if (err) {
         console.error('Błąd zapisu do pliku:', err);
@@ -123,12 +119,10 @@ const delUser = async (id) => {
         } catch (parseError) {
         console.error('Błąd parsowania JSON:', parseError);
         return;
-        }
+        }; 
+        
+        let filtredgData = existingData.filter(item => item.id !== id);
 
-      // Dodaj nowy obiekt do tablicy istniejących danych
-        ; let filtredgData = existingData.filter(item => item.id !== id);
-
-      // Zapisz zmienioną tablicę z powrotem do pliku
       fs.writeFile(file, JSON.stringify(filtredgData, null, 2), 'utf8', (err) => {
       if (err) {
         console.error('Błąd zapisu do pliku:', err);
@@ -170,7 +164,7 @@ const readFile = () => {
     if (err) {
       console.log("error", err.message);
     } else {
-      console.log(data.toString());
+      console.table(data.toString());
     }
   });
 }  
